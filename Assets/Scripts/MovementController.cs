@@ -19,12 +19,14 @@ public class MovementController : MonoBehaviour
     Vector3Int direction = Vector3Int.up;
     Vector2 velocity;
 
-    [HideInInspector] public UnityEvent<Vector3> MoveStart = new UnityEvent<Vector3>();
-    [HideInInspector] public UnityEvent<Vector3> MoveUpdate = new UnityEvent<Vector3>();
-    [HideInInspector] public UnityEvent<Vector3> MoveFinish = new UnityEvent<Vector3>();
+    [HideInInspector] public UnityEvent MoveStart = new UnityEvent();
+    [HideInInspector] public UnityEvent MoveUpdate = new UnityEvent();
+    [HideInInspector] public UnityEvent MoveFinish = new UnityEvent();
 
     public Vector3 GetCurrentWorldPos
         => snakeGrid.grid.CellToWorld(currentCell);
+    public Vector3 GetTargetWorldPos
+        => snakeGrid.grid.CellToWorld(targetCell);
 
     void Awake()
     {
@@ -40,10 +42,11 @@ public class MovementController : MonoBehaviour
     private void DoMove()
     {
         isMoveFinished = false;
+
+        MoveStart.Invoke();
+
         currentCell = targetCell;
         targetCell = targetCell + direction;
-        Vector3 currentWorldPos = snakeGrid.grid.CellToWorld(currentCell);
-        MoveStart.Invoke(currentWorldPos);
     }
 
     void Update()
@@ -73,13 +76,13 @@ public class MovementController : MonoBehaviour
                 ref velocity,
                 moveTime);
 
-            MoveUpdate.Invoke(targetWorldPos);
+            MoveUpdate.Invoke();
 
             // Check if we reached our target cell
             if ((targetWorldPos - transform.position).sqrMagnitude < 0.001f)
             {
                 isMoveFinished = true;
-                MoveFinish.Invoke(targetWorldPos);
+                MoveFinish.Invoke();
 
                 currentCell = targetCell;
             }
